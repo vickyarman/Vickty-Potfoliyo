@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vicky Arman — AI Video Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Syne:wght@400;700;800&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --cream:    #FBF5DD;
+  --beige:    #E7E1B1;
+  --green:    #306D29;
+  --dkgreen:  #0D530E;
+  --ink:      #1a2e1a;
+  --muted:    #7a8c6e;
+  --white:    #fffef7;
+  --shadow:   rgba(13,83,14,0.13);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Lora', Georgia, serif;
+  overflow-x: hidden;
+}
+
+/* Grain texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ─── NAV ─────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.4rem 5rem;
+  background: rgba(251,245,221,0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--beige);
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--dkgreen);
+  letter-spacing: 0.03em;
+}
+.nav-links { display: flex; gap: 2.5rem; align-items: center; }
+.nav-links a {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.25s;
+}
+.nav-links a:hover { color: var(--green); }
+.nav-cta {
+  padding: 0.55rem 1.4rem;
+  background: var(--green) !important;
+  color: var(--cream) !important;
+  border-radius: 2px;
+}
+.nav-cta:hover { background: var(--dkgreen) !important; color: var(--cream) !important; }
+
+/* ─── HERO ────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 9rem 5rem 5rem;
+  gap: 4rem;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* big decorative circle */
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  border: 1px solid var(--beige);
+  top: 50%; right: 8%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  animation: spin 40s linear infinite;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 360px; height: 360px;
+  border-radius: 50%;
+  border: 1px dashed rgba(48,109,41,0.2);
+  top: 50%; right: 14%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  animation: spin 25s linear infinite reverse;
+}
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+.hero-left { position: relative; z-index: 2; }
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 1rem;
+  background: var(--beige);
+  border: 1px solid rgba(48,109,41,0.2);
+  border-radius: 100px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: up 0.7s 0.2s forwards;
+}
+.hero-badge span {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.5)} }
+
+.hero-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(4rem, 7.5vw, 7.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  opacity: 0;
+  animation: up 0.7s 0.35s forwards;
+}
+.hero-name em {
+  font-style: italic;
+  color: var(--green);
+  display: block;
+}
+
+.hero-tagline {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: up 0.7s 0.5s forwards;
+}
+
+.hero-desc {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: rgba(26,46,26,0.65);
+  max-width: 420px;
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: up 0.7s 0.65s forwards;
+}
+
+.hero-btns {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+  opacity: 0;
+  animation: up 0.7s 0.8s forwards;
+}
+.btn-fill {
+  padding: 1rem 2.2rem;
+  background: var(--dkgreen);
+  color: var(--cream);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: all 0.3s;
+  border: 1.5px solid var(--dkgreen);
+}
+.btn-fill:hover { background: var(--green); border-color: var(--green); transform: translateY(-2px); }
+.btn-outline {
+  padding: 1rem 2.2rem;
+  background: transparent;
+  color: var(--green);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  border: 1.5px solid var(--green);
+  transition: all 0.3s;
+}
+.btn-outline:hover { background: var(--green); color: var(--cream); transform: translateY(-2px); }
+
+.hero-right {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; gap: 1.2rem;
+  opacity: 0;
+  animation: up 0.7s 0.9s forwards;
+}
+
+.stat-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+}
+.stat-box {
+  background: var(--white);
+  border: 1px solid var(--beige);
+  padding: 1.8rem 1.2rem;
+  text-align: center;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+.stat-box:hover { border-color: var(--green); transform: translateY(-3px); box-shadow: 0 8px 24px var(--shadow); }
+.stat-n {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+}
+.stat-l {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
+.scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 1rem;
+}
+.scroll-line-anim {
+  width: 40px; height: 1px;
+  background: var(--muted);
+  animation: lineGrow 2s ease-in-out infinite;
+}
+@keyframes lineGrow { 0%,100%{width:20px;opacity:0.4} 50%{width:50px;opacity:1} }
+
+@keyframes up {
+  from { opacity:0; transform: translateY(28px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+/* ─── SECTION BASE ───────────────── */
+section { padding: 6rem 5rem; }
+.sec-eyebrow {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.8rem;
+}
+.sec-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  color: var(--ink);
+  margin-bottom: 3.5rem;
+}
+.sec-title em { font-style: italic; color: var(--green); }
+
+/* ─── PORTFOLIO (VIDEO) ──────────── */
+#portfolio { background: var(--white); }
+
+.portfolio-intro {
+  max-width: 550px;
+  margin-bottom: 3rem;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(26,46,26,0.6);
+}
+
+/* Placeholder video cards (since we don't have real embed URLs) */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.video-card {
+  background: var(--cream);
+  border: 1px solid var(--beige);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.35s;
+  cursor: pointer;
+}
+.video-card:hover {
+  border-color: var(--green);
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px var(--shadow);
+}
+.video-thumb {
+  aspect-ratio: 16/9;
+  background: var(--beige);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.video-thumb-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--beige) 0%, #c8c49a 100%);
+}
+.video-thumb-icon {
+  position: relative;
+  z-index: 2;
+  width: 52px; height: 52px;
+  background: var(--green);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cream);
+  font-size: 1.2rem;
+  transition: transform 0.3s;
+  box-shadow: 0 4px 20px rgba(13,83,14,0.3);
+}
+.video-card:hover .video-thumb-icon { transform: scale(1.15); }
+.video-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(13,83,14,0.7), transparent);
+  padding: 2rem 1rem 0.8rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--cream);
+  font-weight: 700;
+}
+.video-card-body {
+  padding: 1.2rem 1.3rem;
+}
+.video-card-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+.video-card-sub {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.portfolio-drive-cta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem 2.5rem;
+  background: var(--cream);
+  border: 1.5px dashed rgba(48,109,41,0.35);
+  border-radius: 6px;
+}
+.drive-cta-text {
+  flex: 1;
+}
+.drive-cta-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.4rem;
+}
+.drive-cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ─── SKILLS ────────────────────── */
+#skills { background: var(--cream); }
+
+.skills-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 5rem;
+  align-items: start;
+}
+.skills-sidebar {}
+.skills-sidebar p {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: rgba(26,46,26,0.6);
+  margin-bottom: 2rem;
+}
+
+.skill-bars { display: flex; flex-direction: column; gap: 1.4rem; }
+.skill-bar-item {}
+.skill-bar-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.skill-bar-name { color: var(--ink); }
+.skill-bar-pct { color: var(--green); }
+.skill-bar-track {
+  height: 4px;
+  background: var(--beige);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.skill-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--dkgreen));
+  border-radius: 2px;
+  width: 0;
+  transition: width 1.2s ease 0.3s;
+}
+
+.tools-area {}
+.tools-heading {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--beige);
+}
+.tools-clusters { display: flex; flex-direction: column; gap: 2rem; }
+.tool-cluster {}
+.cluster-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.9rem;
+}
+.tool-chips { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.chip {
+  padding: 0.45rem 1rem;
+  background: var(--white);
+  border: 1px solid var(--beige);
+  border-radius: 100px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.06em;
+  transition: all 0.25s;
+}
+.chip:hover {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--cream);
+  transform: translateY(-2px);
+}
+.chip.ai {
+  background: rgba(48,109,41,0.08);
+  border-color: rgba(48,109,41,0.25);
+  color: var(--dkgreen);
+}
+.chip.ai:hover { background: var(--dkgreen); color: var(--cream); }
+
+/* ─── EXPERIENCE ─────────────────── */
+#experience { background: var(--dkgreen); }
+#experience .sec-eyebrow { color: rgba(251,245,221,0.5); }
+#experience .sec-title { color: var(--cream); }
+#experience .sec-title em { color: var(--beige); }
+
+.exp-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 5rem;
+  align-items: start;
+}
+.exp-timeline-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(231,225,177,0.5);
+  margin-bottom: 1.5rem;
+}
+.exp-year-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.exp-year {
+  font-family: 'Playfair Display', serif;
+  font-size: 5rem;
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(231,225,177,0.12);
+}
+.exp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: rgba(251,245,221,0.1);
+  border: 1px solid rgba(231,225,177,0.2);
+  border-radius: 100px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--beige);
+  letter-spacing: 0.12em;
+  margin-top: 1rem;
+}
+.exp-badge-dot {
+  width: 6px; height: 6px;
+  background: #6fce65;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.exp-content {}
+.exp-company-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900;
+  color: var(--cream);
+  margin-bottom: 0.5rem;
+}
+.exp-role-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--beige);
+  margin-bottom: 0.3rem;
+  opacity: 0.7;
+}
+.exp-period {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  color: rgba(231,225,177,0.45);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+}
+.exp-divider {
+  height: 1px;
+  background: rgba(231,225,177,0.12);
+  margin-bottom: 2.5rem;
+}
+.exp-points { display: flex; flex-direction: column; gap: 1.3rem; }
+.exp-point {
+  display: flex;
+  gap: 1.2rem;
+  align-items: flex-start;
+}
+.exp-point-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--beige);
+  opacity: 0.3;
+  padding-top: 0.2rem;
+  flex-shrink: 0;
+  letter-spacing: 0.1em;
+}
+.exp-point-text {
+  font-size: 0.97rem;
+  line-height: 1.75;
+  color: rgba(251,245,221,0.65);
+}
+
+/* ─── EDUCATION ──────────────────── */
+#education { background: var(--beige); }
+
+.edu-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.edu-card {
+  background: var(--cream);
+  border: 1px solid rgba(48,109,41,0.12);
+  border-radius: 6px;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s;
+}
+.edu-card:hover {
+  border-color: var(--green);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px var(--shadow);
+}
+.edu-card-num {
+  position: absolute;
+  top: 1.5rem; right: 2rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: rgba(48,109,41,0.06);
+  line-height: 1;
+  pointer-events: none;
+}
+.edu-tag {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  background: rgba(48,109,41,0.1);
+  border-radius: 100px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 1.2rem;
+}
+.edu-degree {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+  line-height: 1.3;
+}
+.edu-inst {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.4rem;
+}
+.edu-year {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ─── CONTACT ─────────────────────── */
+#contact { background: var(--cream); }
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+.contact-big-text {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+}
+.contact-big-text em { color: var(--green); font-style: italic; }
+.contact-desc {
+  font-size: 0.97rem;
+  line-height: 1.8;
+  color: rgba(26,46,26,0.6);
+}
+
+.contact-cards { display: flex; flex-direction: column; gap: 1rem; }
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.6rem 2rem;
+  background: var(--white);
+  border: 1px solid var(--beige);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+.contact-card:hover {
+  border-color: var(--green);
+  transform: translateX(6px);
+  box-shadow: 0 8px 24px var(--shadow);
+}
+.contact-icon {
+  width: 48px; height: 48px;
+  background: rgba(48,109,41,0.1);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.contact-card-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.contact-card-val {
+  font-family: 'Lora', serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+/* ─── FOOTER ─────────────────────── */
+footer {
+  background: var(--ink);
+  padding: 2.5rem 5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--cream);
+}
+footer p {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(251,245,221,0.35);
+}
+
+/* ─── SCROLL REVEAL ──────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── MOBILE ─────────────────────── */
+@media (max-width: 900px) {
+  nav { padding: 1.2rem 1.5rem; }
+  .nav-links { display: none; }
+
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 7rem 1.2rem 3rem;
+    gap: 2.5rem;
+    min-height: auto;
+  }
+  .hero::before, .hero::after { display: none; }
+  .hero-name {
+    font-size: clamp(2.6rem, 12vw, 4rem);
+    line-height: 0.95;
+    word-break: break-word;
+  }
+  .hero-badge {
+    font-size: 0.6rem;
+    padding: 0.35rem 0.8rem;
+    margin-bottom: 1.2rem;
+  }
+  .hero-tagline {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    word-break: break-word;
+  }
+  .hero-desc {
+    font-size: 0.95rem;
+    max-width: 100%;
+    margin-bottom: 2rem;
+  }
+  .hero-btns {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .btn-fill, .btn-outline {
+    width: 100%;
+    text-align: center;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.72rem;
+  }
+
+  .stat-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+  }
+  .stat-box {
+    padding: 1.2rem 0.5rem;
+  }
+  .stat-n {
+    font-size: 1.6rem;
+  }
+  .stat-l {
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+  }
+  .scroll-hint {
+    margin-top: 0.6rem;
+    font-size: 0.6rem;
+  }
+
+  section { padding: 4rem 1.2rem; }
+  .sec-title {
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
+    margin-bottom: 2rem;
+    word-break: break-word;
+  }
+  .sec-eyebrow {
+    font-size: 0.6rem;
+  }
+
+  .skills-layout, .exp-wrapper, .contact-grid, .edu-cards, .video-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .video-grid { gap: 1rem; }
+  .video-card-body { padding: 1rem; }
+  .video-card-title { font-size: 0.95rem; }
+  .video-card-sub { font-size: 0.6rem; }
+  .video-thumb-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  .video-label {
+    font-size: 0.6rem;
+    padding: 1.5rem 0.8rem 0.6rem;
+  }
+
+  .portfolio-drive-cta {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .drive-cta-title {
+    font-size: 1.05rem;
+  }
+
+  .skill-bars { gap: 1.1rem; }
+  .skill-bar-top {
+    font-size: 0.7rem;
+  }
+
+  .tools-clusters { gap: 1.5rem; }
+  .chip {
+    font-size: 0.68rem;
+    padding: 0.4rem 0.85rem;
+  }
+
+  .exp-wrapper { gap: 2.5rem; }
+  .exp-year {
+    font-size: 3.5rem;
+  }
+  .exp-company-name {
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    word-break: break-word;
+  }
+  .exp-role-title {
+    font-size: 0.7rem;
+  }
+  .exp-period {
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+  .exp-divider {
+    margin-bottom: 1.5rem;
+  }
+  .exp-points { gap: 1rem; }
+  .exp-point-text {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .edu-cards { gap: 1rem; }
+  .edu-card {
+    padding: 1.8rem;
+  }
+  .edu-card-num {
+    font-size: 3rem;
+    top: 1rem;
+    right: 1.2rem;
+  }
+  .edu-degree {
+    font-size: 1.15rem;
+  }
+  .edu-inst {
+    font-size: 0.65rem;
+  }
+
+  .contact-grid {
+    gap: 2.5rem;
+  }
+  .contact-big-text {
+    font-size: clamp(2rem, 8vw, 3rem);
+    word-break: break-word;
+  }
+  .contact-desc {
+    font-size: 0.9rem;
+  }
+  .contact-cards { gap: 0.8rem; }
+  .contact-card {
+    padding: 1.2rem 1.2rem;
+    gap: 1rem;
+  }
+  .contact-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  .contact-card-val {
+    font-size: 0.85rem;
+    word-break: break-word;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 0.8rem;
+    text-align: center;
+    padding: 2rem 1.2rem;
+  }
+  .footer-logo {
+    font-size: 1.1rem;
+  }
+  footer p {
+    font-size: 0.6rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Vicky Arman</div>
+  <div class="nav-links">
+    <a href="#portfolio">Portfolio</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Work</a>
+    <a href="#education">Education</a>
+    <a href="#contact" class="nav-cta">Hire Me</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-left">
+    <div class="hero-badge">
+      <span></span> Available for Work
+    </div>
+    <h1 class="hero-name">
+      VICKY<br><em>ARMAN</em>
+    </h1>
+    <p class="hero-tagline">AI Video Editor &amp; Motion Artist · New Delhi</p>
+    <p class="hero-desc">
+      Creative storyteller blending AI-powered tools with cinematic editing craft. 
+      1.5 years of professional experience creating content that moves, inspires, and converts.
+    </p>
+    <div class="hero-btns">
+      <a href="#portfolio" class="btn-fill">See My Work</a>
+      <a href="#contact" class="btn-outline">Get In Touch</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-n">1+</div>
+        <div class="stat-l">Years Exp</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n">10+</div>
+        <div class="stat-l">AI Tools</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n">4</div>
+        <div class="stat-l">Software</div>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <div class="scroll-line-anim"></div>
+      Scroll to explore
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+  <p class="sec-eyebrow">My Work</p>
+  <h2 class="sec-title">Selected <em>Portfolio</em></h2>
+  <p class="portfolio-intro reveal">
+    Below are categories of videos I've created — from hospital education content to motion graphic explainers and AI-generated visual work. Click "View Full Portfolio" to see all videos.
+  </p>
+
+  <div class="video-grid">
+    <div class="video-card reveal">
+      <div class="video-thumb">
+        <div class="video-thumb-bg"></div>
+        <div class="video-thumb-icon">▶</div>
+        <div class="video-label">Healthcare Content</div>
+      </div>
+      <div class="video-card-body">
+        <div class="video-card-title">Educational Videos</div>
+        <div class="video-card-sub">Healthcare Education</div>
+      </div>
+    </div>
+    <div class="video-card reveal" style="transition-delay:0.1s">
+      <div class="video-thumb" style="background: linear-gradient(135deg, #c8c49a 0%, #a8a870 100%)">
+        <div class="video-thumb-bg" style="background: linear-gradient(135deg, #c0bb88, #9a9660)"></div>
+        <div class="video-thumb-icon">▶</div>
+        <div class="video-label">Motion Graphics</div>
+      </div>
+      <div class="video-card-body">
+        <div class="video-card-title">Motion Explainers</div>
+        <div class="video-card-sub">After Effects</div>
+      </div>
+    </div>
+    <div class="video-card reveal" style="transition-delay:0.2s">
+      <div class="video-thumb" style="background: linear-gradient(135deg, #b0c8a0, #7aaa6a)">
+        <div class="video-thumb-bg" style="background: linear-gradient(135deg, #a8c090, #6a9060)"></div>
+        <div class="video-thumb-icon">▶</div>
+        <div class="video-label">AI Generated</div>
+      </div>
+      <div class="video-card-body">
+        <div class="video-card-title">AI Cinematic Reels</div>
+        <div class="video-card-sub">Runway ML · Sora · Veo 3</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="portfolio-drive-cta reveal">
+    <div class="drive-cta-text">
+      <div class="drive-cta-label">Full Portfolio</div>
+      <div class="drive-cta-title">View all my videos on Google Drive →</div>
+    </div>
+    <a href="https://drive.google.com/drive/folders/1oAGQLI7zmJxR9KcBwcg4E8tfSSTH73U6?usp=drive_link" target="_blank" class="btn-fill">Open Portfolio</a>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <p class="sec-eyebrow">Expertise</p>
+  <h2 class="sec-title">Skills &amp; <em>Tools</em></h2>
+  <div class="skills-layout">
+    <div class="skills-sidebar reveal">
+      <p>Blending traditional cinematic craft with cutting-edge AI workflows — I create content that feels both human and futuristic.</p>
+      <div class="skill-bars">
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">Adobe Premiere Pro</span><span class="skill-bar-pct">95%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-w="95"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">After Effects</span><span class="skill-bar-pct">90%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-w="90"></div></div>
+        </div>
+
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">Photoshop</span><span class="skill-bar-pct">85%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-w="85"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">AI Video Workflows</span><span class="skill-bar-pct">92%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-w="92"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tools-area reveal" style="transition-delay:0.15s">
+      <div class="tools-heading">All Tools & Software</div>
+      <div class="tools-clusters">
+        <div class="tool-cluster">
+          <div class="cluster-name">🤖 AI Video Tools</div>
+          <div class="tool-chips">
+            <span class="chip ai">Runway ML</span>
+            <span class="chip ai">Pika Labs</span>
+            <span class="chip ai">Kaiber</span>
+            <span class="chip ai">Synthesia</span>
+            <span class="chip ai">Sora (OpenAI)</span>
+            <span class="chip ai">Veo 3 (Google)</span>
+            <span class="chip ai">Veed.io</span>
+          </div>
+        </div>
+        <div class="tool-cluster">
+          <div class="cluster-name">🎨 Creative AI</div>
+          <div class="tool-chips">
+            <span class="chip ai">Midjourney</span>
+            <span class="chip ai">ElevenLabs</span>
+            <span class="chip ai">ChatGPT</span>
+          </div>
+        </div>
+        <div class="tool-cluster">
+          <div class="cluster-name">💻 Software</div>
+          <div class="tool-chips">
+            <span class="chip">Premiere Pro</span>
+            <span class="chip">After Effects</span>
+            <span class="chip">Photoshop</span>
+          </div>
+        </div>
+        <div class="tool-cluster">
+          <div class="cluster-name">✨ Creative Skills</div>
+          <div class="tool-chips">
+            <span class="chip">Storytelling</span>
+            <span class="chip">Motion Graphics</span>
+            <span class="chip">Cinematic Timing</span>
+            <span class="chip">Color Grading</span>
+            <span class="chip">Concept Dev</span>
+            <span class="chip">Scene Composition</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <p class="sec-eyebrow">Career</p>
+  <h2 class="sec-title">Work <em>Experience</em></h2>
+  <div class="exp-wrapper">
+    <div class="reveal">
+      <div class="exp-timeline-label">Since</div>
+      <div class="exp-year-block">
+        <div class="exp-year">2024</div>
+      </div>
+      <div class="exp-badge">
+        <div class="exp-badge-dot"></div>
+        Currently Working
+      </div>
+    </div>
+    <div class="exp-content reveal" style="transition-delay:0.15s">
+      <div class="exp-company-name">Maharishi Ayurveda Hospital</div>
+      <div class="exp-role-title">AI Video Editor</div>
+      <div class="exp-period">November 2024 – Present</div>
+      <div class="exp-divider"></div>
+      <div class="exp-points">
+        <div class="exp-point">
+          <span class="exp-point-num">01</span>
+          <p class="exp-point-text">Edited educational and promotional videos for the hospital's digital platforms, reaching thousands of viewers across social media and the website.</p>
+        </div>
+        <div class="exp-point">
+          <span class="exp-point-num">02</span>
+          <p class="exp-point-text">Integrated AI-based editing workflows for significantly faster turnaround and brand consistency across all video content.</p>
+        </div>
+        <div class="exp-point">
+          <span class="exp-point-num">03</span>
+          <p class="exp-point-text">Collaborated with the marketing team to design visually appealing, brand-aligned content for multiple digital channels.</p>
+        </div>
+        <div class="exp-point">
+          <span class="exp-point-num">04</span>
+          <p class="exp-point-text">Created short-form reels, long-form informative videos, and motion-graphic explainers for Ayurvedic health education.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <p class="sec-eyebrow">Background</p>
+  <h2 class="sec-title">Education &amp; <em>Training</em></h2>
+  <div class="edu-cards">
+    <div class="edu-card reveal">
+      <div class="edu-card-num">01</div>
+      <div class="edu-tag">University</div>
+      <div class="edu-degree">B.A. Programme</div>
+      <div class="edu-inst">SOL, Delhi University</div>
+      <div class="edu-year">2nd Year — 2025</div>
+    </div>
+    <div class="edu-card reveal" style="transition-delay:0.15s">
+      <div class="edu-card-num">02</div>
+      <div class="edu-tag">Professional Course</div>
+      <div class="edu-degree">AI Video Editing &amp; Motion Graphics</div>
+      <div class="edu-inst">MAAC Institute</div>
+      <div class="edu-year">Completed 2024</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-grid">
+    <div class="reveal">
+      <p class="sec-eyebrow">Let's Connect</p>
+      <h2 class="contact-big-text">Ready to<br>create something<br><em>amazing?</em></h2>
+      <p class="contact-desc">Whether you need cinematic edits, AI-generated content, or motion graphics — I'm here to bring your vision to life.</p>
+    </div>
+    <div class="contact-cards reveal" style="transition-delay:0.2s">
+      <a href="tel:9267998824" class="contact-card">
+        <div class="contact-icon">📱</div>
+        <div>
+          <div class="contact-card-label">Call Me</div>
+          <div class="contact-card-val">+91 9267998824</div>
+        </div>
+      </a>
+      <a href="mailto:vickyarman1247@gmail.com" class="contact-card">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <div class="contact-card-label">Email Me</div>
+          <div class="contact-card-val">vickyarman1247@gmail.com</div>
+        </div>
+      </a>
+      <a href="https://drive.google.com/drive/folders/1oAGQLI7zmJxR9KcBwcg4E8tfSSTH73U6?usp=drive_link" target="_blank" class="contact-card">
+        <div class="contact-icon">🎬</div>
+        <div>
+          <div class="contact-card-label">My Portfolio</div>
+          <div class="contact-card-val">View All Videos →</div>
+        </div>
+      </a>
+      <a href="https://www.linkedin.com/in/vicky-arman-224524274/" target="_blank" class="contact-card">
+        <div class="contact-icon">💼</div>
+        <div>
+          <div class="contact-card-label">LinkedIn</div>
+          <div class="contact-card-val">Vicky Arman →</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Vicky Arman</div>
+  <p>© 2026 · AI Video Editor · New Delhi, India</p>
+  <p>Made with passion &amp; AI</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        // Animate skill bars
+        e.target.querySelectorAll('.skill-bar-fill').forEach(bar => {
+          bar.style.width = bar.dataset.w + '%';
+        });
+      }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => obs.observe(el));
+
+  // Also trigger skill bars when sidebar reveals
+  document.querySelectorAll('.skills-sidebar').forEach(el => {
+    const io = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        el.querySelectorAll('.skill-bar-fill').forEach(bar => {
+          setTimeout(() => bar.style.width = bar.dataset.w + '%', 200);
+        });
+      }
+    }, { threshold: 0.3 });
+    io.observe(el);
+  });
+</script>
+</body>
+</html>
